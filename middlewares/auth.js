@@ -8,13 +8,13 @@ const constants = require('../utils/constants');
 const auth = (req, res, next) => {
   const token = req.cookies.jwt || (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
   if (!token) {
-    return next(new UnauthorizedError(constants.errorMessages.requiredAuthorization));
+    return next(new UnauthorizedError(constants.resError.requiredAuthorization));
   }
   let payload;
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return next(new UnauthorizedError(constants.errorMessages.requiredAuthorization));
+    return next(new UnauthorizedError(constants.resError.requiredAuthorization));
   }
   req.user = payload;
   return next();

@@ -1,17 +1,13 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
+const { celebrate } = require('celebrate');
 const userController = require('../controllers/users');
+const { validationRequestPatchProfile } = require('../middlewares/validationRequest');
 
 router.get('/me', userController.readMe);
 
 router.patch(
   '/me',
-  celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      email: Joi.string().required().email(),
-    }),
-  }),
+  celebrate(validationRequestPatchProfile),
   userController.patchProfile,
 );
 

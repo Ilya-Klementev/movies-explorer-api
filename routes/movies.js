@@ -6,7 +6,7 @@ const {
   validationRequestDeleteMovie,
 } = require('../middlewares/validationRequest');
 
-router.get('/', moviesController.readAllMovies);
+router.get('/', moviesController.readAllUserMovies);
 router.post(
   '/',
   celebrate(validationRequestCreateMovie),

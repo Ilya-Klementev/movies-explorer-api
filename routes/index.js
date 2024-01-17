@@ -20,7 +20,7 @@ router.use('/movies', moviesRoutes);
 router.get('/signout', userController.signout);
 
 router.all('*', (req, res, next) => {
-  next(new NotFoundError(constants.errorMessages.pageNotFound));
+  next(new NotFoundError(constants.resError.pageNotFound));
 });
 
 module.exports = router;

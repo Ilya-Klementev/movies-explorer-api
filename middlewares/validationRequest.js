@@ -38,9 +38,17 @@ const validationRequestDeleteMovie = {
   }),
 };
 
+const validationRequestPatchProfile = {
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    email: Joi.string().required().email(),
+  }),
+};
+
 module.exports = {
   validationRequestSignin,
   validationRequestSignup,
   validationRequestCreateMovie,
   validationRequestDeleteMovie,
+  validationRequestPatchProfile,
 };

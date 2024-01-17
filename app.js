@@ -4,7 +4,7 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 
-const { PORT = 3000, DB_URL } = process.env;
+const { PORT = 3000, DB_URL, NODE_ENV } = process.env;
 const mongoose = require('mongoose');
 
 const app = express();
@@ -20,7 +20,7 @@ app.use(cookieParser());
 app.use(limiter);
 app.use(cors);
 
-mongoose.connect(DB_URL || 'mongodb://127.0.0.1:27017/bitfilmsdb')
+mongoose.connect(NODE_ENV === 'production' ? DB_URL : 'mongodb://127.0.0.1:27017/bitfilmsdb')
   .then(() => {
     console.log('mongoDB connected');
   });

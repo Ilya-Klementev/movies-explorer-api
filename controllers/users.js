@@ -14,14 +14,14 @@ const { JWT_SECRET = 'secret', SALT_ROUNDS = 10, NODE_ENV } = process.env;
 async function login(req, res, next) {
   const { email, password } = req.body;
   if (!email || !password) {
-    return next(new CastError(constants.errorMessages.emptyData));
+    return next(new CastError(constants.resError.emptyData));
   }
 
   try {
     const user = await userModel.findOne({ email }).select('+password');
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return next(new UnauthorizedError(constants.errorMessages.unauthorizedUserData));
+      return next(new UnauthorizedError(constants.resError.unauthorizedUserData));
     }
 
     const payload = { _id: user._id };
@@ -31,7 +31,9 @@ async function login(req, res, next) {
       { expiresIn: '7d' },
     );
     res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, sameSite: true });
-    return res.status(200).send({ message: constants.successMessages.userSignedIn, token });
+    return res
+      .status(constants.resSuccess.userSignedIn.code)
+      .send({ message: constants.resSuccess.userSignedIn.message, token });
   } catch (err) {
     return next(err);
   }
@@ -50,14 +52,13 @@ async function createUser(req, res, next) {
 
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
-
-    return res.status(201).send(userWithoutPassword);
+    return res.status(constants.resSuccess.createdUser.code).send({ ...userWithoutPassword });
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return next(new ValidationError(constants.errorMessages.invalidUserData));
+      return next(new ValidationError(constants.resError.validationError));
     }
     if (err.code === 11000) {
-      return next(new ConflictError(constants.errorMessages.conflictError));
+      return next(new ConflictError(constants.resError.conflictUserError));
     }
     return next(err);
   }
@@ -73,13 +74,16 @@ async function patchProfile(req, res, next) {
     );
 
     if (!user || user.length === 0) {
-      return next(new NotFoundError(constants.errorMessages.userNotFound));
+      return next(new NotFoundError(constants.resError.userNotFound));
     }
 
-    return res.status(200).send(user);
+    return res.status(constants.resSuccess.profilePatched.code).send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return next(new CastError(constants.errorMessages.invalidProfileUpdate));
+      return next(new CastError(constants.resError.validationError));
+    }
+    if (err.code === 11000) {
+      return next(new ConflictError(constants.resError.conflictUserError));
     }
     return next(err);
   }
@@ -91,11 +95,11 @@ async function readMe(req, res, next) {
     const user = await userModel.findOne({ _id });
 
     if (!user || user.length === 0) {
-      return next(new NotFoundError(constants.errorMessages.userNotFound));
+      return next(new NotFoundError(constants.resError.userNotFound));
     }
 
     const { email, name } = user;
-    return res.send({ email, name });
+    return res.status(constants.resSuccess.readUser.code).send({ email, name });
   } catch (err) {
     return next(err);
   }
@@ -105,9 +109,11 @@ function signout(req, res, next) {
   try {
     res.clearCookie('jwt', { sameSite: true });
 
-    return res.status(200).send({ message: constants.successMessages.userSignedOut });
+    return res
+      .status(constants.resSuccess.userSignedOut.code)
+      .send({ message: constants.resSuccess.userSignedOut.message });
   } catch (err) {
-    return next(new UnauthorizedError(constants.errorMessages.unauthorizedSignout));
+    return next(new UnauthorizedError(constants.resError.unauthorizedSignout));
   }
 }
 
